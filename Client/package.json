@@ -1,0 +1,36 @@
+{
+  "name": "sharpts",
+  "version": "1.0.0",
+  "description": "Package for view part of SharpTS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watchless": "less-watch-compiler --run-once && less-watch-compiler",
+    "watchts": "npx ttsc -watch",
+    "ts": "npx ttsc"
+  },
+  "author": "Roman Jámbor",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "globby": "^10.0.1"
+  },
+  "devDependencies": {
+    "less": "^3.10.1",
+    "ttypescript": "^1.5.7",
+    "typescript": "^3.5.3",
+    "@types/react": "^16.9.2",
+    "@types/react-dom": "^16.9.0",
+    "tst-import-less": "^1.0.0"
+  },
+  "files": [
+    "**/*.js",
+    "**/*.d.ts",
+    "**/*.css"
+  ],
+  "dependencies": {
+    "globby": "^10.0.1"
+  }
+}

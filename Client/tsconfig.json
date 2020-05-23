@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "jsx": "react",
+    "plugins": [
+      { "transform": "tst-import-less", "after": false }
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "global-types.d.ts"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    "dist/**/*",
+    "build/**/*"
+  ]
+} 

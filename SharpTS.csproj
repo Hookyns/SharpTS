@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<Title>SharpTS - TypeScript and C# Interop</Title>
+		<Authors>Roman Jámbor</Authors>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Castle.Core" Version="4.4.0" />
+	  <PackageReference Include="Chromely.CefGlue.Winapi" Version="4.0.70.1" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+	  <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <TypeScriptCompile Include="Client\---Bundler.ts" />
+	  <TypeScriptCompile Include="Client\bootstrap.tsx" />
+	  <TypeScriptCompile Include="Client\components\LoadingSpinner\index.tsx" />
+	  <TypeScriptCompile Include="Client\global-types.d.ts" />
+	  <TypeScriptCompile Include="Client\index.ts" />
+	  <TypeScriptCompile Include="Client\infrastructure\IRootComponentProps.ts" />
+	  <TypeScriptCompile Include="Client\message\IMessageBroker.ts" />
+	  <TypeScriptCompile Include="Client\message\MessageBroker.ts" />
+	  <TypeScriptCompile Include="Client\message\messages.ts" />
+	  <TypeScriptCompile Include="Client\message\messages\IFrameNavigateMessageData.ts" />
+	  <TypeScriptCompile Include="Client\message\MessageType.ts" />
+	  <TypeScriptCompile Include="Client\page\Frame.tsx" />
+	  <TypeScriptCompile Include="Client\page\Page.tsx" />
+	  <TypeScriptCompile Include="Client\page\PageIdentifier.ts" />
+	  <TypeScriptCompile Include="Client\page\PageLoader.ts" />
+	  <TypeScriptCompile Include="Client\page\PageRenderer.tsx" />
+	  <TypeScriptCompile Include="Client\reflection\inheritance.ts" />
+	  <TypeScriptCompile Include="Client\types.ts" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="contentFiles" />
+	  <Folder Include="Message\Operations" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Client\node_modules\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Remove="Client\node_modules\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Client\node_modules\**" />
+	</ItemGroup>
+
+</Project>
