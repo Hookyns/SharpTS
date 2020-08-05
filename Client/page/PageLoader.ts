@@ -13,7 +13,7 @@ export default class PageLoader {
 	 */
 	public addSourceModules(modules: Array<any>) {
 		// m.default stands for default export from module
-		let pageModules = modules.filter(m => isSubclassOf(m.default, Page));
+		let pageModules = modules.map(module => module.default).filter(m => isSubclassOf(m, Page));
 		
 		for (let page of pageModules) {
 			this.pages.set(page.typeName, page);
@@ -25,6 +25,8 @@ export default class PageLoader {
 	 * @param typeName
 	 */
 	public find(typeName: string): typeof Page | undefined {
+		console.log(typeName, this.pages);
+		
 		return this.pages.get(typeName);
 	}
 }

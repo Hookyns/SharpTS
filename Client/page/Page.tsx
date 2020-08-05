@@ -32,7 +32,7 @@ export default abstract class Page<TProps extends IPageProps, TState extends IVi
 	 * @param props
 	 * @param pageIdentifier
 	 */
-	protected constructor(props: TProps, pageIdentifier: PageIdentifier)
+	public constructor(props: TProps, pageIdentifier: PageIdentifier)
 	{
 		super(props);
 

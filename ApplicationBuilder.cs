@@ -1,7 +1,7 @@
 using System;
 using Chromely.CefGlue;
 using Microsoft.Extensions.DependencyInjection;
-using SharpTS.Chromely;
+using SharpTS.ChromelyProxy;
 using SharpTS.Core;
 using SharpTS.DI;
 using SharpTS.Message;
@@ -122,20 +122,16 @@ namespace SharpTS
 					.UseDefaultResourceSchemeHandler("local", string.Empty)
 					.WithStartUrl(string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl)
 					.RegisterMessageRouterHandler(this.messageBroker.MessageHandler)
-#if DEBUG
-					.WithDebuggingMode(true);
-#else
-					.WithCustomSetting(CefSettingKeys.NoSandbox, "true")
-//					.WithCustomSetting(CefSettingKeys.ResourcesDirPath, ".\\AppData")
-					.WithCustomSetting(CefSettingKeys.LocalesDirPath, ".\\AppData")
-					.WithCustomSetting(CefSettingKeys.CachePath, ".\\AppData\\Cache")
-					.WithCustomSetting(CefSettingKeys.UserDataPath, ".\\UserData")
-					.WithDebuggingMode(false);
-#endif
-				;
+					;
 			});
 
 			return this.AppWindow.Create();
+		}
+
+		public ApplicationBuilder Debug()
+		{
+			this.AppWindow.Debug();
+			return this;
 		}
 
 		#endregion

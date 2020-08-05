@@ -40,7 +40,7 @@ namespace SharpTS.Core
 			{
 				Data = new FrameNavigateMessageData()
 				{
-					PageName = pageType.AssemblyQualifiedName,
+					PageName = pageType.FullName,
 					FrameName = this.Name
 				}
 			});
