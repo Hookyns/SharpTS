@@ -1,13 +1,18 @@
 using System;
-using Chromely.CefGlue;
+using System.Linq;
+using Chromely;
+using Chromely.Core;
+using Chromely.Core.Configuration;
+using Chromely.Core.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using SharpTS.ChromelyProxy;
+using SharpTS.ChromelyWrap;
 using SharpTS.Core;
 using SharpTS.DI;
 using SharpTS.Message;
 using SharpTS.Page;
 using SharpTS.Reflection;
 using SharpTS.ViewModel;
+using Window = SharpTS.Core.Window;
 
 namespace SharpTS
 {
@@ -33,34 +38,44 @@ namespace SharpTS
 		/// </summary>
 		private static ApplicationBuilder instance;
 
-		/// <summary>
-		/// Application instance
-		/// </summary>
-		private Application application;
+		// /// <summary>
+		// /// Application instance
+		// /// </summary>
+		// private Application application;
+
+		// /// <summary>
+		// /// DI service collection
+		// /// </summary>
+		// private readonly ServiceCollection serviceCollection = new ServiceCollection();
+		//
+		// /// <summary>
+		// /// DI service provider
+		// /// </summary>
+		// private ServiceProvider serviceProvider;
 
 		/// <summary>
-		/// DI service collection
+		/// Chromely AppBuilder
 		/// </summary>
-		private readonly ServiceCollection serviceCollection = new ServiceCollection();
+		private AppBuilder appBuilder;
 
 		/// <summary>
-		/// DI service provider
+		/// Chromely app config
 		/// </summary>
-		private ServiceProvider serviceProvider;
-		
+		private IChromelyConfiguration config;
+
 		/// <summary>
-		/// Interop message broker
+		/// Instance of SharpTs application
 		/// </summary>
-		private readonly MessageBroker messageBroker = new MessageBroker();
+		private ChromelyAppBase sharpTsApp;
 
 		#endregion
 
 		#region Properties
 
-		/// <summary>
-		/// Window instance
-		/// </summary>
-		public AppWindow AppWindow { get; private set; }
+		// /// <summary>
+		// /// Window instance
+		// /// </summary>
+		// public AppWindow AppWindow { get; private set; }
 
 		#endregion
 
@@ -72,9 +87,7 @@ namespace SharpTS
 		/// <param name="application">Application name</param>
 		private ApplicationBuilder(Application application)
 		{
-			this.application = application;
-
-			this.Initialize();
+			this.Initialize(application);
 		}
 
 		#endregion
@@ -88,11 +101,12 @@ namespace SharpTS
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
-		public static ApplicationBuilder Build(Application application)
+		public static ApplicationBuilder UseApp<TApp>(TApp application = null)
+		where TApp : Application, new()
 		{
 			if (application == null)
 			{
-				throw new ArgumentNullException(nameof(application));
+				application = new TApp();
 			}
 
 			lock (@lock)
@@ -111,26 +125,49 @@ namespace SharpTS
 		/// <summary>
 		/// Start application
 		/// </summary>
-		public int Start(string startUrl = null)
+		public void Start(string startUrl = null)
 		{
-			this.AppWindow.Configure(config =>
-			{
-				config
-					.WithDefaultSubprocess()
-					.WithHostTitle(this.application.Name)
-					.WithSilentCefBinariesLoading(true)
-					.UseDefaultResourceSchemeHandler("local", string.Empty)
-					.WithStartUrl(string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl)
-					.RegisterMessageRouterHandler(this.messageBroker.MessageHandler)
-					;
-			});
-
-			return this.AppWindow.Create();
+			// this.AppWindow.Configure(config =>
+			// {
+			// 	config
+			// 		.WithDefaultSubprocess()
+			// 		.WithHostTitle(this.application.Name)
+			// 		.WithSilentCefBinariesLoading(true)
+			// 		.UseDefaultResourceSchemeHandler("local", string.Empty)
+			// 		.WithStartUrl(string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl)
+			// 		.RegisterMessageRouterHandler(this.messageBroker.MessageHandler)
+			// 		;
+			// });
+			//
+			// return this.AppWindow.Create();
+			
+			string[] args = Environment.GetCommandLineArgs()
+				// Skip first, it's program path 
+				.Skip(1)
+				.ToArray();
+			
+			config.StartUrl = string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl;
+			
+			// Blocking call
+			this.appBuilder
+				.Build()
+				.Run(args);
 		}
 
-		public ApplicationBuilder Debug()
+		/// <summary>
+		/// Enable debug mode
+		/// </summary>
+		/// <param name="debugPort"></param>
+		/// <returns></returns>
+		public ApplicationBuilder Debug(int debugPort = 20480)
 		{
-			this.AppWindow.Debug();
+			this.config.DebuggingMode = true;
+			this.config.CustomSettings[CefSettingKeys.NOSANDBOX] = "false";
+			this.config.CustomSettings[CefSettingKeys.REMOTEDEBUGGINGPORT] = debugPort.ToString();
+			this.config.CustomSettings.Remove(CefSettingKeys.LOCALESDIRPATH);
+			this.config.CustomSettings.Remove(CefSettingKeys.CACHEPATH);
+			this.config.CustomSettings.Remove(CefSettingKeys.USERDATAPATH);
+
 			return this;
 		}
 
@@ -141,82 +178,65 @@ namespace SharpTS
 		/// <summary>
 		/// Initialize application
 		/// </summary>
-		private void Initialize()
+		/// <param name="application"></param>
+		private void Initialize(Application application)
 		{
-			this.InitializeApplication();
-
-			this.RegisterInternalServices();
-
-			// Let application configure services
-			this.application.ConfiguraceServices(this.serviceCollection);
+			this.PrepareConfig();
 			
-			// Build provider from collection
-			this.serviceProvider = this.serviceCollection.BuildServiceProvider();
+			// TODO: Create custom application, handling frameless and using specific chromely window
+			this.sharpTsApp = new SharpTsBasicApplication(application);
 
-			// Create window
-			this.AppWindow = new AppWindow();
-
-			this.messageBroker.On(MessageType.DOMContentLoaded, async (arg) =>
-			{
-				await this.application.OnLaunched();
-				arg.Success(null);
-			});
+			this.appBuilder = AppBuilder.Create()
+				.UseConfig<DefaultConfiguration>(this.config)
+				.UseWindow<AppWindow>()
+				.UseApp<ChromelyBasicApp>(this.sharpTsApp);
 		}
-
+		
 		/// <summary>
-		/// Initialize application
+		/// Prepare new config object
 		/// </summary>
-		private void InitializeApplication()
+		/// <returns></returns>
+		private void PrepareConfig()
 		{
-			// Create Window
-			Window window = new Window(this.messageBroker);
-			this.application.SetWindow(window);
-		}
+			// string[] args = Environment.GetCommandLineArgs().Skip(1).ToArray();
 
-		/// <summary>
-		/// Register internal services
-		/// </summary>
-		private void RegisterInternalServices()
-		{
-			// Register all classes inherited from Page in whole app
-			this.RegisterPages();
-
-			// Register all ViewModels
-			this.RegisterViewModels();
+			this.config = DefaultConfiguration.CreateForRuntimePlatform();
+				
+			// config.B
+				// .WithAppArgs(args)
+				// .WithHostBounds(1000, 600)
+				
+				// .WithShutdownCefOnExit(true)
+				// .WithHostMode(WindowState.Normal)
+				// .WithHostFlag(HostFlagKey.Frameless, true) / TODO: Frameless option
+				
+				// .WithHostCustomStyle(windowStyle)
+				// .WithCustomSetting(CefSettingKeys.NoSandbox, "true")
+//					.WithCustomSetting(CefSettingKeys.ResourcesDirPath, ".\\AppData")
 			
-			// Lazy service
-			this.serviceCollection.AddScoped(typeof(Lazy<>), typeof(LazyService<>));
-
-			this.serviceCollection.AddSingleton<ViewModelFactory>();
-			this.serviceCollection.AddSingleton<PageFactory>();
-			this.serviceCollection.AddSingleton<PageManager>();
+			this.config.CustomSettings[CefSettingKeys.NOSANDBOX] = "true";
+			this.config.CustomSettings[CefSettingKeys.LOCALESDIRPATH] = ".\\AppData";
+			this.config.CustomSettings[CefSettingKeys.CACHEPATH] = ".\\AppData\\Cache";
+			this.config.CustomSettings[CefSettingKeys.USERDATAPATH] = ".\\UserData";
+			
+			config.CefDownloadOptions = new CefDownloadOptions(true, true);
+			
+			this.config.WindowOptions.StartCentered = true;
+			// config.WindowOptions.Position = new WindowPosition(1, 2);
+			config.WindowOptions.Size = new WindowSize(1000, 600);
+			config.DebuggingMode = false;
+			
+			config.WindowOptions.RelativePathToIconFile = "chromely.ico"; // TODO: Make it configurable
+			
+			// 		.WithDefaultSubprocess()
+			// 		.WithHostTitle(this.application.Name)
+			// 		.WithSilentCefBinariesLoading(true)
+			// 		.UseDefaultResourceSchemeHandler("local", string.Empty)
+			// 		.WithStartUrl(string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl)
+			// 		.RegisterMessageRouterHandler(this.messageBroker.MessageHandler)
+			
 		}
 
-		/// <summary>
-		/// Register pages from application
-		/// </summary>
-		private void RegisterPages()
-		{
-			var pages = TypeFinder.GetSubclassesOf(typeof(Page<>));
-
-			foreach (var page in pages)
-			{
-				this.serviceCollection.AddTransient(page);
-			}
-		}
-
-		/// <summary>
-		/// Register ViewModels from application
-		/// </summary>
-		private void RegisterViewModels()
-		{
-			var viewModels = TypeFinder.GetSubclassesOf(typeof(IViewModel));
-
-			foreach (var page in viewModels)
-			{
-				this.serviceCollection.AddTransient(page);
-			}
-		}
 
 		#endregion
 	}

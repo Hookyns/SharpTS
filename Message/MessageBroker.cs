@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Chromely.CefGlue;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Xilium.CefGlue;
 
 namespace SharpTS.Message
 {
 	internal class MessageBroker
 	{
+		private readonly CefFrame frame;
+
 		#region Delegates
 		
 		/// <summary>
@@ -53,12 +55,15 @@ namespace SharpTS.Message
 		public InteropMessageHandler MessageHandler { get; private set; }
 
 		#endregion
-		
+
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public MessageBroker()
+		/// <param name="frame"></param>
+		public MessageBroker(CefFrame frame)
 		{
+			this.frame = frame;
+			
 			// List of fallback handlers used if no handlers registered
 			this.messageListeners.Add(MessageType.DOMContentLoaded, new List<Operation>() {this.DOMContentLoaded});
 			this.messageListeners.Add(MessageType.Navigate, new List<Operation>() {this.Navigate});
@@ -76,7 +81,7 @@ namespace SharpTS.Message
 		internal void Send<TMessage>(TMessage message)
 			where TMessage : BaseMessage
 		{
-			FrameHandler.GetMainFrame().ExecuteJavaScript(this.SendMessageScript(message), null, 0);
+			this.frame.ExecuteJavaScript(this.SendMessageScript(message), null, 0);
 		}
 
 		/// <summary>

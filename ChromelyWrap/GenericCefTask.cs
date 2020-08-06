@@ -1,7 +1,7 @@
 using System;
 using Xilium.CefGlue;
 
-namespace SharpTS.ChromelyProxy
+namespace SharpTS.ChromelyWrap
 {
 	/// <summary>
 	/// Generic CefTask implementation
