@@ -4,15 +4,8 @@ using Chromely;
 using Chromely.Core;
 using Chromely.Core.Configuration;
 using Chromely.Core.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using SharpTS.ChromelyWrap;
 using SharpTS.Core;
-using SharpTS.DI;
-using SharpTS.Message;
-using SharpTS.Page;
-using SharpTS.Reflection;
-using SharpTS.ViewModel;
-using Window = SharpTS.Core.Window;
 
 namespace SharpTS
 {
@@ -219,7 +212,7 @@ namespace SharpTS
 			this.config.CustomSettings[CefSettingKeys.CACHEPATH] = ".\\AppData\\Cache";
 			this.config.CustomSettings[CefSettingKeys.USERDATAPATH] = ".\\UserData";
 			
-			config.CefDownloadOptions = new CefDownloadOptions(true, true);
+			config.CefDownloadOptions = new CefDownloadOptions(true, false); // TODO: true, true
 			
 			this.config.WindowOptions.StartCentered = true;
 			// config.WindowOptions.Position = new WindowPosition(1, 2);
