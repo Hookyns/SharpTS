@@ -36,8 +36,17 @@ namespace SharpTS.Core
 		/// </summary>
 		/// <param name="serviceCollection"></param>
 		/// <returns></returns>
-		public virtual void ConfiguraceServices(IServiceCollection serviceCollection)
+		public virtual void ConfigureServices(IServiceCollection serviceCollection)
 		{
+		}
+
+		/// <summary>
+		/// Initialization method
+		/// </summary>
+		/// <returns></returns>
+		public virtual Task Initialize()
+		{
+			return Task.CompletedTask;
 		}
 		
 		/// <summary>

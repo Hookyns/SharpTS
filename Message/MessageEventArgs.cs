@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using Xilium.CefGlue;
 using Xilium.CefGlue.Wrapper;
 
 namespace SharpTS.Message
@@ -23,6 +24,11 @@ namespace SharpTS.Message
 		#endregion
 		
 		#region Properties
+
+		/// <summary>
+		/// Base message
+		/// </summary>
+		internal CefFrame CefFrame { get; }
 
 		/// <summary>
 		/// Base message
@@ -56,10 +62,12 @@ namespace SharpTS.Message
 		/// <summary>
 		/// Ctor
 		/// </summary>
+		/// <param name="cefFrame"></param>
 		/// <param name="rawJson"></param>
 		/// <param name="callback"></param>
-		public MessageEventArgs(string rawJson, CefMessageRouterBrowserSide.Callback callback)
+		public MessageEventArgs(CefFrame cefFrame, string rawJson, CefMessageRouterBrowserSide.Callback callback)
 		{
+			this.CefFrame = cefFrame;
 			this.callback = callback;
 			
 			this.RawJson = rawJson;

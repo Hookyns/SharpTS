@@ -3,15 +3,16 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Chromely.Core;
 using Xilium.CefGlue;
 using Xilium.CefGlue.Wrapper;
 
 namespace SharpTS.Message
 {
 	/// <summary>
-	/// Ibterop message handler
+	/// Interop message handler
 	/// </summary>
-	public class InteropMessageHandler : CefMessageRouterBrowserSide.Handler
+	public class InteropMessageHandler : CefMessageRouterBrowserSide.Handler, IChromelyMessageRouter
 	{
 		#region Events
 
@@ -60,7 +61,7 @@ namespace SharpTS.Message
 				{
 					try
 					{
-						this.OnMessage?.Invoke(new MessageEventArgs(request, callback));
+						this.OnMessage?.Invoke(new MessageEventArgs(frame, request, callback));
 					}
 					catch (Exception ex)
 					{

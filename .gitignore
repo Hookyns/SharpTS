@@ -5,6 +5,8 @@ Client/build
 **/*.js
 **/*.js.map
 
+.idea
+
 #!Client/bundle.js
 !Client/webpack.config.js
 Client**/*.d.ts

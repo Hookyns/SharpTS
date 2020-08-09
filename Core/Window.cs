@@ -89,7 +89,7 @@ namespace SharpTS.Core
 					return Task.CompletedTask;
 				}
 				
-				Frame frame = new Frame(frameName, this.messageBroker);
+				Frame frame = new Frame(frameName, args.CefFrame, this.messageBroker);
 				
 				// Add to collection of existing frames
 				this.Frames.Add(frameName, frame);

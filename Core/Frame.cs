@@ -1,6 +1,7 @@
 using System;
 using SharpTS.Message;
 using SharpTS.Message.Messages;
+using Xilium.CefGlue;
 
 namespace SharpTS.Core
 {
@@ -10,23 +11,30 @@ namespace SharpTS.Core
 	public sealed class Frame
 	{
 		/// <summary>
-		/// Frame name
+		/// Owning CefFrame
 		/// </summary>
-		public string Name { get; }
+		private readonly CefFrame cefFrame;
 
 		/// <summary>
 		/// Message broker
 		/// </summary>
 		private readonly MessageBroker messageBroker;
+		
+		/// <summary>
+		/// Frame name
+		/// </summary>
+		public string Name { get; }
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
 		/// <param name="name"></param>
+		/// <param name="cefFrame"></param>
 		/// <param name="messageBroker"></param>
-		internal Frame(string name, MessageBroker messageBroker)
+		internal Frame(string name, CefFrame cefFrame, MessageBroker messageBroker)
 		{
 			this.Name = name;
+			this.cefFrame = cefFrame;
 			this.messageBroker = messageBroker;
 		}
 
@@ -36,7 +44,7 @@ namespace SharpTS.Core
 		/// <param name="pageType"></param>
 		public void Navigate(Type pageType)
 		{
-			this.messageBroker.Send(new DataMessage<FrameNavigateMessageData>(MessageType.Navigate)
+			this.messageBroker.Send(this.cefFrame, new DataMessage<FrameNavigateMessageData>(MessageType.Navigate)
 			{
 				Data = new FrameNavigateMessageData()
 				{

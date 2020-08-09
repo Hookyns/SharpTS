@@ -1,192 +1,190 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Chromely.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xilium.CefGlue;
 
 namespace SharpTS.Message
 {
-	internal class MessageBroker
-	{
-		private readonly CefFrame frame;
+    internal class MessageBroker
+    {
+        #region Delegates
 
-		#region Delegates
-		
-		/// <summary>
-		/// Operation delegate
-		/// </summary>
-		public delegate Task Operation(MessageEventArgs args);
+        /// <summary>
+        /// Operation delegate
+        /// </summary>
+        public delegate Task Operation(MessageEventArgs args);
 
-		#endregion
+        #endregion
 
-		#region Fields
-		
-		/// <summary>
-		/// Name of JS function which will take messages
-		/// </summary>
-		private const string ClientMeaaseBrokerTakeFunc = "SharpTS.messageBroker.take";
+        #region Fields
 
-		/// <summary>
-		/// Event listeners
-		/// </summary>
-		private readonly Dictionary<MessageType, List<Operation>> messageListeners =
-			new Dictionary<MessageType, List<Operation>>();
+        /// <summary>
+        /// Name of JS function which will take messages
+        /// </summary>
+        private const string ClientMeaaseBrokerTakeFunc = "SharpTS.messageBroker.take";
 
-		/// <summary>
-		/// Serialization settings
-		/// </summary>
-		private static readonly JsonSerializerSettings SerializeSettings = new JsonSerializerSettings()
-		{
-			ContractResolver = new DefaultContractResolver
-			{
-				NamingStrategy = new CamelCaseNamingStrategy()
-			},
-			Formatting = Formatting.None
-		};
+        /// <summary>
+        /// Serialization settings
+        /// </summary>
+        private static readonly JsonSerializerSettings SerializeSettings = new JsonSerializerSettings()
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            },
+            Formatting = Formatting.None
+        };
 
-		#endregion
-		
-		#region Properties
-		
-		/// <summary>
-		/// Handler
-		/// </summary>
-		public InteropMessageHandler MessageHandler { get; private set; }
+        /// <summary>
+        /// Event listeners
+        /// </summary>
+        private readonly Dictionary<MessageType, List<Operation>> messageListeners = new Dictionary<MessageType, List<Operation>>();
 
-		#endregion
+        #endregion
 
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="frame"></param>
-		public MessageBroker(CefFrame frame)
-		{
-			this.frame = frame;
-			
-			// List of fallback handlers used if no handlers registered
-			this.messageListeners.Add(MessageType.DOMContentLoaded, new List<Operation>() {this.DOMContentLoaded});
-			this.messageListeners.Add(MessageType.Navigate, new List<Operation>() {this.Navigate});
-			this.messageListeners.Add(MessageType.SyncState, new List<Operation>() {this.SyncState});
-			this.messageListeners.Add(MessageType.Fetch, new List<Operation>() {this.Fetch});
+        #region Properties
 
-			this.PrepareInteropHandler();
-		}
+        /// <summary>
+        /// Handler
+        /// </summary>
+        internal InteropMessageHandler MessageHandler { get; }
 
-		/// <summary>
-		/// Send message to client
-		/// </summary>
-		/// <param name="message"></param>
-		/// <typeparam name="TMessage"></typeparam>
-		internal void Send<TMessage>(TMessage message)
-			where TMessage : BaseMessage
-		{
-			this.frame.ExecuteJavaScript(this.SendMessageScript(message), null, 0);
-		}
+        #endregion
 
-		/// <summary>
-		/// Register handler for message type
-		/// </summary>
-		/// <param name="messageType"></param>
-		/// <param name="operation"></param>
-		internal void On(MessageType messageType, Operation operation)
-		{
-			if (this.messageListeners.TryGetValue(messageType, out var listeners))
-			{
-				listeners.Add(operation);
-				return;
-			}
+        #region Ctors
 
-			this.messageListeners.Add(messageType, new List<Operation>()
-			{
-				operation
-			});
-		}
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="messageHandlers"></param>
+        public MessageBroker(IEnumerable<IChromelyMessageRouter> messageHandlers)
+        {
+            this.MessageHandler = (InteropMessageHandler)messageHandlers.First(handler => handler is InteropMessageHandler);
 
-		#region Private methods
+            // List of fallback handlers used if no handlers registered
+            this.messageListeners.Add(MessageType.DOMContentLoaded, new List<Operation>() {this.DOMContentLoaded});
+            this.messageListeners.Add(MessageType.Navigate, new List<Operation>() {this.Navigate});
+            this.messageListeners.Add(MessageType.SyncState, new List<Operation>() {this.SyncState});
+            this.messageListeners.Add(MessageType.Fetch, new List<Operation>() {this.Fetch});
 
-		/// <summary>
-		/// Create script 
-		/// </summary>
-		/// <param name="message"></param>
-		/// <returns></returns>
-		private string SendMessageScript(object message)
-		{
-			string messageData = Newtonsoft.Json.JsonConvert.SerializeObject(message, SerializeSettings);
-			return $"{ClientMeaaseBrokerTakeFunc}({messageData})";
-		}
+            this.MessageHandler.OnMessage += this.HandlerOnMessage;
+        }
 
-		/// <summary>
-		/// Prepare Interop Message Handler
-		/// </summary>
-		/// <returns></returns>
-		private void PrepareInteropHandler()
-		{
-			this.MessageHandler = new InteropMessageHandler();
-			this.MessageHandler.OnMessage += this.HandlerOnMessage;
-		}
+        #endregion
 
-		/// <summary>
-		/// On interop message
-		/// </summary>
-		/// <param name="args"></param>
-		private async void HandlerOnMessage(MessageEventArgs args)
-		{
-			if (this.messageListeners.TryGetValue(args.BaseMessage.MessageType, out var handlers))
-			{
-				// LIFO iteration
-				for (int i = handlers.Count - 1; i >= 0 && !args.Served; i--)
-				{
-					await handlers[i].Invoke(args);
-					if (args.Served) break;
-				}
-			}
+        #region Methods
 
-			if (!args.Served)
-			{
-				string msg = $"No operation registered or no operation respond to message with type '{args.BaseMessage.MessageType}'";
-				
-				Trace.WriteLine(msg);
-				args.Failure(-1, msg);
-			}
-		}
+        /// <summary>
+        /// Send message to client
+        /// </summary>
+        /// <param name="cefFrame">Target frame</param>
+        /// <param name="message"></param>
+        /// <typeparam name="TMessage"></typeparam>
+        internal void Send<TMessage>(CefFrame cefFrame, TMessage message)
+            where TMessage : BaseMessage
+        {
+            cefFrame.ExecuteJavaScript(this.SendMessageScript(message), null, 0);
+        }
 
-		#endregion
+        /// <summary>
+        /// Register handler for message type
+        /// </summary>
+        /// <param name="messageType"></param>
+        /// <param name="operation"></param>
+        internal void On(MessageType messageType, Operation operation)
+        {
+            if (this.messageListeners.TryGetValue(messageType, out var listeners))
+            {
+                listeners.Add(operation);
+                return;
+            }
 
-		#region Operations
+            this.messageListeners.Add(messageType, new List<Operation>()
+            {
+                operation
+            });
+        }
 
-		private Task DOMContentLoaded(MessageEventArgs args)
-		{
-			return Task.CompletedTask;
-		}
+        #endregion
 
-		/// <summary>
-		/// Fetch data event handler
-		/// </summary>
-		private Task Fetch(MessageEventArgs args)
-		{
-			args.Success("");
-			return Task.CompletedTask;
-		}
+        #region Private methods
 
-		/// <summary>
-		/// Navigate event handler
-		/// </summary>
-		private Task Navigate(MessageEventArgs args)
-		{
-			args.Success("");
-			return Task.CompletedTask;
-		}
+        /// <summary>
+        /// Create script 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        private string SendMessageScript(object message)
+        {
+            string messageData = JsonConvert.SerializeObject(message, SerializeSettings);
+            return $"{ClientMeaaseBrokerTakeFunc}({messageData})";
+        }
 
-		/// <summary>
-		/// Sync state event handler
-		/// </summary>
-		private Task SyncState(MessageEventArgs args)
-		{
-			args.Success("");
-			return Task.CompletedTask;
-		}
+        /// <summary>
+        /// On interop message
+        /// </summary>
+        /// <param name="args"></param>
+        private async void HandlerOnMessage(MessageEventArgs args)
+        {
+            if (this.messageListeners.TryGetValue(args.BaseMessage.MessageType, out var handlers))
+            {
+                // LIFO iteration
+                for (int i = handlers.Count - 1; i >= 0 && !args.Served; i--)
+                {
+                    await handlers[i].Invoke(args);
+                    if (args.Served) break;
+                }
+            }
 
-		#endregion
-	}
+            if (!args.Served)
+            {
+                string msg = $"No operation registered or no operation respond to message with type '{args.BaseMessage.MessageType}'";
+
+                Trace.WriteLine(msg);
+                args.Failure(-1, msg);
+            }
+        }
+
+        #endregion
+
+        #region Operations
+
+        private Task DOMContentLoaded(MessageEventArgs args)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Fetch data event handler
+        /// </summary>
+        private Task Fetch(MessageEventArgs args)
+        {
+            args.Success("");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Navigate event handler
+        /// </summary>
+        private Task Navigate(MessageEventArgs args)
+        {
+            args.Success("");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sync state event handler
+        /// </summary>
+        private Task SyncState(MessageEventArgs args)
+        {
+            args.Success("");
+            return Task.CompletedTask;
+        }
+
+        #endregion
+    }
 }

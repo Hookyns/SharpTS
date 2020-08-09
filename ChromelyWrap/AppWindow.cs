@@ -15,16 +15,24 @@ namespace SharpTS.ChromelyWrap
 	{
 		#region Events
 
+		/// <summary>
+		/// Call right after Browser instance creation
+		/// </summary>
+		public event Action BrowserCreated;
+		
+		/// <summary>
+		/// Called after application load finish including UI(/client) part
+		/// </summary>
 		public event Action OnLaunched;
 
 		#endregion
 
 		#region Fields
 
-		/// <summary>
-		/// Chromely configuration
-		/// </summary>
-		private IChromelyConfiguration config;
+		// /// <summary>
+		// /// Chromely configuration
+		// /// </summary>
+		// private IChromelyConfiguration config;
 
 		// /// <summary>
 		// /// Chromely window
@@ -34,7 +42,7 @@ namespace SharpTS.ChromelyWrap
 		/// <summary>
 		/// Debug mode enabled
 		/// </summary>
-		private bool debugMode;
+		private bool debugMode; // TODO: allow to enable based on AppBuilder setting
 
 		#endregion
 
@@ -56,6 +64,19 @@ namespace SharpTS.ChromelyWrap
 		#endregion
 
 		#region Methods
+
+		/// <summary>
+		/// Method creating browser
+		/// </summary>
+		/// <param name="hostHandle"></param>
+		/// <param name="winXID"></param>
+		public override void Create(IntPtr hostHandle, IntPtr winXID)
+		{
+			base.Create(hostHandle, winXID);
+			
+			// Call registered handlers
+			this.BrowserCreated?.Invoke();
+		}
 
 		// /// <summary>
 		// /// Change default configuration of Chromely window
