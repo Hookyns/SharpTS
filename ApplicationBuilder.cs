@@ -157,6 +157,9 @@ namespace SharpTS
         public ApplicationBuilder Frameless()
         {
             this.StartFrameless = true;
+            
+            this.config.WindowOptions.FramelessOption.DragZones.Add(new DragZoneConfiguration(30, 0, 0, 0));
+            
             return this;
         }
 
@@ -204,18 +207,6 @@ namespace SharpTS
             // string[] args = Environment.GetCommandLineArgs().Skip(1).ToArray();
 
             this.config = DefaultConfiguration.CreateForRuntimePlatform();
-
-            // config.B
-            // .WithAppArgs(args)
-            // .WithHostBounds(1000, 600)
-
-            // .WithShutdownCefOnExit(true)
-            // .WithHostMode(WindowState.Normal)
-            // .WithHostFlag(HostFlagKey.Frameless, true) / TODO: Frameless option
-
-            // .WithHostCustomStyle(windowStyle)
-            // .WithCustomSetting(CefSettingKeys.NoSandbox, "true")
-//					.WithCustomSetting(CefSettingKeys.ResourcesDirPath, ".\\AppData")
 
             this.config.CustomSettings[CefSettingKeys.NOSANDBOX] = "true";
             // TODO: Move to AppData; need to move it after Cef binaries download
