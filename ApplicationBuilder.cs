@@ -33,26 +33,6 @@ namespace SharpTS
         /// </summary>
         private static ApplicationBuilder _instance;
 
-        // /// <summary>
-        // /// Application instance
-        // /// </summary>
-        // private Application application;
-
-        // /// <summary>
-        // /// DI service collection
-        // /// </summary>
-        // private readonly ServiceCollection serviceCollection = new ServiceCollection();
-        //
-        // /// <summary>
-        // /// DI service provider
-        // /// </summary>
-        // private ServiceProvider serviceProvider;
-
-        /// <summary>
-        /// Chromely AppBuilder
-        /// </summary>
-        private AppBuilder appBuilder;
-
         /// <summary>
         /// Chromely app config
         /// </summary>
@@ -67,9 +47,20 @@ namespace SharpTS
 
         #region Properties
 
-        public ILoggerFactory LoggerFactory { get; private set; }
+        /// <summary>
+        /// Open DevTools on application strt
+        /// </summary>
+        internal bool StartWithDevToolsOpened { get; private set; }
 
-        public bool StartWithDevToolsOpened { get; private set; }
+        /// <summary>
+        /// Application instance
+        /// </summary>
+        internal Application Application { get; private set; }
+
+        /// <summary>
+        /// Start application without window frame
+        /// </summary>
+        internal bool StartFrameless { get; set; }
 
         #endregion
 
@@ -85,11 +76,6 @@ namespace SharpTS
             
             this.Initialize();
         }
-
-        /// <summary>
-        /// Application instance
-        /// </summary>
-        public Application Application { get; private set; }
 
         #endregion
 
@@ -136,7 +122,7 @@ namespace SharpTS
                 loggerFactory = Activator.CreateInstance<TLoggerFactory>();
             }
 
-            this.LoggerFactory = loggerFactory;
+            Logging.LoggerFactory.Factory = loggerFactory;
 
             return this;
         }
@@ -158,9 +144,19 @@ namespace SharpTS
             return this;
         }
 
+        /// <summary>
+        /// Start application withDevTools opened
+        /// </summary>
+        /// <returns></returns>
         public ApplicationBuilder StartWithDevTools()
         {
             this.StartWithDevToolsOpened = true;
+            return this;
+        }
+
+        public ApplicationBuilder Frameless()
+        {
+            this.StartFrameless = true;
             return this;
         }
 
@@ -174,13 +170,16 @@ namespace SharpTS
                 .Skip(1)
                 .ToArray();
 
-            config.StartUrl = string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl;
-
-            // TOOD: zavolat metodu Setup(), aby sez ApplicationBuilderu nastavilo všechno potřebné
+            this.config.StartUrl = string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl;
             
-            // Blocking call
-            this.appBuilder
+            this.sharpTsApp = this.StartFrameless ? (ChromelyAppBase)new SharpTsFramelessApplication(this) : new SharpTsBasicApplication(this);
+
+            AppBuilder.Create()
+                .UseConfig<DefaultConfiguration>(this.config)
+                .UseWindow<AppWindow>()
+                .UseApp<ChromelyBasicApp>(this.sharpTsApp)
                 .Build()
+                // Blocking call
                 .Run(args);
         }
 
@@ -193,23 +192,14 @@ namespace SharpTS
         /// </summary>
         private void Initialize()
         {
-            this.PrepareConfig(this.Application);
-
-            // TODO: Create custom application, handling frameless and using specific chromely window
-            this.sharpTsApp = new SharpTsBasicApplication(this);
-
-            this.appBuilder = AppBuilder.Create()
-                .UseConfig<DefaultConfiguration>(this.config)
-                .UseWindow<AppWindow>()
-                .UseApp<ChromelyBasicApp>(this.sharpTsApp);
+            this.PrepareConfig();
         }
 
         /// <summary>
         /// Prepare new config object
         /// </summary>
-        /// <param name="application"></param>
         /// <returns></returns>
-        private void PrepareConfig(Application application)
+        private void PrepareConfig()
         {
             // string[] args = Environment.GetCommandLineArgs().Skip(1).ToArray();
 
@@ -233,29 +223,17 @@ namespace SharpTS
             this.config.CustomSettings[CefSettingKeys.CACHEPATH] = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AppData", "Cache");
             this.config.CustomSettings[CefSettingKeys.USERDATAPATH] = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserData");
 
-            config.CefDownloadOptions = new CefDownloadOptions(true, false); // TODO: true, true
+            this.config.CefDownloadOptions = new CefDownloadOptions(true, false); // TODO: true, true
 
-            config.WindowOptions.Title = application.Name;
+            this.config.WindowOptions.Title = this.Application.Name;
             this.config.WindowOptions.StartCentered = true;
             // config.WindowOptions.Position = new WindowPosition(1, 2);
-            config.WindowOptions.Size = new WindowSize(1000, 600);
-            config.DebuggingMode = false;
-
-            config.WindowOptions.RelativePathToIconFile = "chromely.ico"; // TODO: Make it configurable
-
-            // 		.WithDefaultSubprocess()
-            // 		.WithHostTitle(this.application.Name)
-            // 		.WithSilentCefBinariesLoading(true)
-            // 		.UseDefaultResourceSchemeHandler("local", string.Empty)
-            // 		.WithStartUrl(string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl)
-            // 		.RegisterMessageRouterHandler(this.messageBroker.MessageHandler)
+            this.config.WindowOptions.Size = new WindowSize(1000, 600);
+            this.config.WindowOptions.RelativePathToIconFile = this.Application.Icon;
+            
+            this.config.DebuggingMode = false;
         }
 
         #endregion
-
-        // /// <summary>
-        // /// Window instance
-        // /// </summary>
-        // public AppWindow AppWindow { get; private set; }
     }
 }

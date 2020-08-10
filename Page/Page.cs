@@ -97,7 +97,7 @@ namespace SharpTS.Page
 		/// <param name="args"></param>
 		async Task IInternalPage<TViewModel>.OnNavigatedTo(NavigationEventArgs args)
 		{
-			await OnNavigatedTo(args);
+			await this.OnNavigatedTo(args);
 		}
 
 		/// <summary>

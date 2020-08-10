@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using SharpTS.Message;
 
 namespace SharpTS.Core
@@ -9,7 +8,7 @@ namespace SharpTS.Core
 	/// <summary>
 	/// Class representing application window which hold frames with rendered content
 	/// </summary>
-	public class Window
+	internal class Window
 	{
 		#region Delegates
 
@@ -53,7 +52,7 @@ namespace SharpTS.Core
 		/// Ctor
 		/// </summary>
 		/// <param name="messageBroker"></param>
-		internal Window(MessageBroker messageBroker)
+		public Window(MessageBroker messageBroker)
 		{
 			this.messageBroker = messageBroker;
 
