@@ -80,6 +80,7 @@ namespace SharpTS.Core
 		{
 			try
 			{
+				// TODO: What to do when reloaded? Dispose old frame and init new again? Everything will work as new load but state wil be lost.
 				string frameName = args.PostData.Value<string>("name");
 
 				if (string.IsNullOrWhiteSpace(frameName))
@@ -87,17 +88,34 @@ namespace SharpTS.Core
 					args.Failure(-1, "Frame name undefined");
 					return Task.CompletedTask;
 				}
+
+				Frame frame;
+				bool newFrame = false;
 				
-				Frame frame = new Frame(frameName, args.CefFrame, this.messageBroker);
+				// Exsting frame
+				if (this.Frames.TryGetValue(frameName, out frame))
+				{
+					frame.Load(frame.CurrentComponent);
+				}
+				// New frame
+				else
+				{
+					frame = new Frame(frameName, args.CefFrame, this.messageBroker);
+					newFrame = true;
 				
-				// Add to collection of existing frames
-				this.Frames.Add(frameName, frame);
+					// Add to collection of existing frames
+					this.Frames.Add(frameName, frame);
+				}
+				
 				
 				// Confirm success
 				args.Success();
 				
 				// Invoke handlers
-				this.OnNewFrame?.Invoke(frame);
+				if (newFrame)
+				{
+					this.OnNewFrame?.Invoke(frame);
+				}
 			}
 			catch (Exception ex)
 			{

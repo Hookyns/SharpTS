@@ -6,14 +6,14 @@ namespace SharpTS.Message
 	public enum MessageType
 	{
 		/// <summary>
-		/// Send from client to server, notifiing about DOMContentLoaded
+		/// Send from client to server, notifying about DOMContentLoaded
 		/// </summary>
 		DOMContentLoaded = 0,
 		
 		/// <summary>
-		/// Navigate to another page
+		/// Load another component
 		/// </summary>
-		Navigate,
+		Load,
 		
 		/// <summary>
 		/// Sync state of ViewModel

@@ -1,12 +1,12 @@
 using SharpTS.ViewModel;
 
-namespace SharpTS.Page
+namespace SharpTS.Component
 {
 	/// <summary>
-	/// Generic page interface
+	/// Generic component interface
 	/// </summary>
 	/// <typeparam name="TViewModel"></typeparam>
-	public interface IGenericPage<out TViewModel> : IPage
+	public interface IGenericComponent<out TViewModel> : IComponent
 		where TViewModel : class, IViewModel
 	{
 		

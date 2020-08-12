@@ -9,9 +9,9 @@ export interface IViewModel
 }
 
 /**
- * Base page property interface
+ * Base component property interface
  */
-export interface IPageProps
+export interface IComponentProps
 {
 	viewModel?: IViewModel;
 }

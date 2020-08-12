@@ -17,22 +17,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <TypeScriptCompile Include="Client\---Bundler.ts" />
 	  <TypeScriptCompile Include="Client\bootstrap.tsx" />
 	  <TypeScriptCompile Include="Client\components\LoadingSpinner\index.tsx" />
+	  <TypeScriptCompile Include="Client\components\TitleBar\index.tsx" />
 	  <TypeScriptCompile Include="Client\global-types.d.ts" />
-	  <TypeScriptCompile Include="Client\index.ts" />
 	  <TypeScriptCompile Include="Client\infrastructure\IRootComponentProps.ts" />
 	  <TypeScriptCompile Include="Client\message\IMessageBroker.ts" />
 	  <TypeScriptCompile Include="Client\message\MessageBroker.ts" />
 	  <TypeScriptCompile Include="Client\message\messages.ts" />
-	  <TypeScriptCompile Include="Client\message\messages\IFrameNavigateMessageData.ts" />
+	  <TypeScriptCompile Include="Client\message\messages\IFrameLoadMessageData.ts" />
 	  <TypeScriptCompile Include="Client\message\MessageType.ts" />
-	  <TypeScriptCompile Include="Client\page\Frame.tsx" />
-	  <TypeScriptCompile Include="Client\page\Page.tsx" />
-	  <TypeScriptCompile Include="Client\page\PageIdentifier.ts" />
-	  <TypeScriptCompile Include="Client\page\PageLoader.ts" />
-	  <TypeScriptCompile Include="Client\page\PageRenderer.tsx" />
+	  <TypeScriptCompile Include="Client\component\Frame.tsx" />
+	  <TypeScriptCompile Include="Client\component\ComponentIdentifier.ts" />
 	  <TypeScriptCompile Include="Client\reflection\inheritance.ts" />
 	  <TypeScriptCompile Include="Client\types.ts" />
 	</ItemGroup>

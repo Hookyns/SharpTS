@@ -1,11 +1,11 @@
 using Newtonsoft.Json.Linq;
 
-namespace SharpTS.Page
+namespace SharpTS.Component
 {
 	/// <summary>
 	/// Navigation event args
 	/// </summary>
-	public class NavigationEventArgs
+	public class CreateEventArgs
 	{
 		/// <summary>
 		/// Navigation parameters
@@ -13,19 +13,19 @@ namespace SharpTS.Page
 		public JObject Parameters { get; }
 
 		/// <summary>
-		/// Identifier of previous page
+		/// Identifier of previous component
 		/// </summary>
-		public PageIdentifier PreviousPage { get; }
+		public ComponentIdentifier PreviousComponent { get; }
 
 		/// <summary>
-		/// Parent page identifier
+		/// Parent component identifier
 		/// </summary>
-		public PageIdentifier ParentPage { get; }
+		public ComponentIdentifier ParentComponent { get; }
 
 		/// <summary>
-		/// If Page is displayed as partial
+		/// If Component is displayed as partial
 		/// </summary>
-		public bool IsPartial => this.ParentPage != null;
+		public bool IsPartial => this.ParentComponent != null;
 		
 		/// <summary>
 		/// Default action is prevented
@@ -36,13 +36,13 @@ namespace SharpTS.Page
 		/// Ctor
 		/// </summary>
 		/// <param name="parameters"></param>
-		/// <param name="previousPage"></param>
-		/// <param name="parentPage"></param>
-		public NavigationEventArgs(JObject parameters, PageIdentifier previousPage, PageIdentifier parentPage)
+		/// <param name="previousComponent"></param>
+		/// <param name="parentComponent"></param>
+		public CreateEventArgs(JObject parameters, ComponentIdentifier previousComponent, ComponentIdentifier parentComponent)
 		{
 			this.Parameters = parameters;
-			this.PreviousPage = previousPage;
-			this.ParentPage = parentPage;
+			this.PreviousComponent = previousComponent;
+			this.ParentComponent = parentComponent;
 		}
 
 		/// <summary>

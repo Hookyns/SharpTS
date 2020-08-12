@@ -3,7 +3,7 @@ namespace SharpTS.Message.Messages
 	/// <summary>
 	/// Object for navigation data
 	/// </summary>
-	public class FrameNavigateMessageData
+	public class FrameLoadMessageData
 	{
 		/// <summary>
 		/// Name of frame which should navigate
@@ -11,8 +11,8 @@ namespace SharpTS.Message.Messages
 		public string FrameName { get; set; }
 		
 		/// <summary>
-		/// Name of page which should be loaded
+		/// Name of component which should be loaded
 		/// </summary>
-		public string PageName { get; set; }
+		public string ComponentName { get; set; }
 	}
 }

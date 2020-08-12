@@ -1,6 +1,6 @@
-import Page from "./page/Page";
-import PageLoader from "./page/PageLoader";
-import * as React from "react";
+import Component       from "./component/Component";
+import ComponentLoader from "./component/ComponentLoader";
+import * as React      from "react";
 import {render} from "react-dom";
 import MessageBroker from "./message/MessageBroker";
 import {MessageType} from "./message/MessageType";
@@ -29,9 +29,10 @@ export default class Bootstrap
 	private containerNode: Node | undefined;
 
 	/**
-	 * Page loader
+	 * Component loader
+	 * @internal
 	 */
-	private pageLoader: PageLoader = new PageLoader();
+	public componentLoader: ComponentLoader = new ComponentLoader();
 
 	/**
 	 * Message broker
@@ -54,9 +55,11 @@ export default class Bootstrap
 	 */
 	constructor()
 	{
-		if (new.target != BootstrapActivator) {
-			throw new Error("Bootstrap.constructor() is private!");
-		}
+		// BUG: WebPack remove ew.target and replace it by "Object()" which leads to throw
+		// if (new.target != BootstrapActivator) {
+		// 	console.log(new.target)
+		// 	throw new Error("Bootstrap.constructor() is private!");
+		// }
 		
 		this.registerGlobals();
 		this.initDomLoaded();
@@ -87,12 +90,12 @@ export default class Bootstrap
 	}
 
 	/**
-	 * Register pages in app
-	 * @param pages
+	 * Register components in app
+	 * @param components
 	 */
-	public pages(pages: Array<Page<any, any>>): Bootstrap
+	public components(components: Array<Component<any, any>>): Bootstrap
 	{
-		this.pageLoader.addSourceModules(pages);
+		this.componentLoader.addSourceModules(components);
 		return this;
 	}
 

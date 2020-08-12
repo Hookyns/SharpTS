@@ -2,13 +2,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using SharpTS.ViewModel;
 
-namespace SharpTS.Page
+namespace SharpTS.Component
 {
 	/// <summary>
-	/// Internal page interface
+	/// Internal component interface
 	/// </summary>
 	/// <typeparam name="TViewModel"></typeparam>
-	internal interface IInternalPage<out TViewModel> : IGenericPage<TViewModel>
+	internal interface IInternalComponent<out TViewModel> : IGenericComponent<TViewModel>
 		where TViewModel : class, IViewModel
 	{
 		/// <summary>
@@ -22,15 +22,27 @@ namespace SharpTS.Page
 		ViewModelFactory ViewModelFactory { get; set; }
 		
 		/// <summary>
-		/// Method called before user navigate to this page
+		/// Method called before user navigate to this component
 		/// </summary>
 		/// <param name="args"></param>
-		Task OnNavigatedTo(NavigationEventArgs args);
+		Task Created(CreateEventArgs args);
 
 		/// <summary>
-		/// Method called before user leave this page
+		/// Method called when the component should be destroy
 		/// </summary>
-		Task OnNavigatedFrom();
+		Task Destroyed();
+
+		/// <summary>
+		/// Called on activation when the component is marked as keep-alive 
+		/// </summary>
+		/// <returns></returns>
+		Task Activated();
+
+		/// <summary>
+		/// Called instead of Destroy when the component is marked as keep-alive
+		/// </summary>
+		/// <returns></returns>
+		Task Deactivated();
 
 		/// <summary>
 		/// Creates ViewModel instance

@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Chromely.Core;
 using Chromely.Core.Host;
 using Microsoft.Extensions.DependencyInjection;
 using SharpTS.Core;
 using SharpTS.DI;
 using SharpTS.Message;
-using SharpTS.Page;
+using SharpTS.Component;
 using SharpTS.Reflection;
 using SharpTS.ViewModel;
 
@@ -58,10 +59,10 @@ namespace SharpTS.ChromelyWrap
             {
                 throw new InvalidOperationException("Created window is not SharpTS AppWindow!");
             }
-
+            
             if (this.applicationBuilder.StartWithDevToolsOpened)
             {
-                window.ShowDevTools();
+                window.StartWithDevTools();
             }
         }
 
@@ -84,8 +85,8 @@ namespace SharpTS.ChromelyWrap
         /// </summary>
         internal void RegisterInternalServices(ServiceCollection serviceCollection)
         {
-            // Register all classes inherited from Page in whole app
-            this.RegisterPages(serviceCollection);
+            // Register all classes inherited from Component in whole app
+            this.RegisterComponents(serviceCollection);
 
             // Register all ViewModels
             this.RegisterViewModels(serviceCollection);
@@ -97,21 +98,21 @@ namespace SharpTS.ChromelyWrap
             serviceCollection.AddSingleton<MessageBroker>();
 
             serviceCollection.AddSingleton<ViewModelFactory>();
-            serviceCollection.AddSingleton<PageFactory>();
-            serviceCollection.AddSingleton<PageManager>();
+            serviceCollection.AddSingleton<ComponentFactory>();
+            serviceCollection.AddSingleton<ComponentManager>();
             serviceCollection.AddSingleton<Window>();
         }
 
         /// <summary>
-        /// Register pages from application
+        /// Register components from application
         /// </summary>
-        internal void RegisterPages(ServiceCollection serviceCollection)
+        internal void RegisterComponents(ServiceCollection serviceCollection)
         {
-            var pages = TypeFinder.GetSubclassesOf(typeof(Page<>));
+            var components = TypeFinder.GetSubclassesOf(typeof(Component<>));
 
-            foreach (var page in pages)
+            foreach (Type component in components)
             {
-                serviceCollection.AddTransient(page);
+                serviceCollection.AddTransient(component);
             }
         }
 
@@ -120,11 +121,11 @@ namespace SharpTS.ChromelyWrap
         /// </summary>
         internal void RegisterViewModels(ServiceCollection serviceCollection)
         {
-            var viewModels = TypeFinder.GetSubclassesOf(typeof(IViewModel));
+            ICollection<Type> viewModels = TypeFinder.GetSubclassesOf(typeof(IViewModel));
 
-            foreach (var page in viewModels)
+            foreach (Type component in viewModels)
             {
-                serviceCollection.AddTransient(page);
+                serviceCollection.AddTransient(component);
             }
         }
 

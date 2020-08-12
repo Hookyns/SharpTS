@@ -5,12 +5,12 @@ export enum MessageType {
 	DOMContentLoaded,
 	
 	/**
-	 * Navigate to another page
+	 * Load another component
 	 */
-	Navigate,
+	Load,
 
 	/**
-	 * Sync state with C# page ViewModel
+	 * Sync state with C# component ViewModel
 	 */
 	SyncState,
 

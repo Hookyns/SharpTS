@@ -67,7 +67,7 @@ namespace SharpTS.Message
 
             // List of fallback handlers used if no handlers registered
             this.messageListeners.Add(MessageType.DOMContentLoaded, new List<Operation>() {this.DOMContentLoaded});
-            this.messageListeners.Add(MessageType.Navigate, new List<Operation>() {this.Navigate});
+            this.messageListeners.Add(MessageType.Load, new List<Operation>() {this.Navigate});
             this.messageListeners.Add(MessageType.SyncState, new List<Operation>() {this.SyncState});
             this.messageListeners.Add(MessageType.Fetch, new List<Operation>() {this.Fetch});
 

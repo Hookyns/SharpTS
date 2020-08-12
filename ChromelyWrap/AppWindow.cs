@@ -25,9 +25,9 @@ namespace SharpTS.ChromelyWrap
 		#region Fields
 
 		/// <summary>
-		/// Debug mode enabled
+		/// Start with DevTools opened after load
 		/// </summary>
-		private bool debugMode; // TODO: allow to enable based on AppBuilder setting
+		private bool startWithDevTools;
 
 		#endregion
 
@@ -71,10 +71,18 @@ namespace SharpTS.ChromelyWrap
 		private void OnLoaded()
 		{
 			// Proccess debug mode
-			if (this.debugMode)
+			if (this.startWithDevTools)
 			{
 				this.ShowDevTools();
 			}
+		}
+
+		/// <summary>
+		/// Open DevTools on load
+		/// </summary>
+		public void StartWithDevTools()
+		{
+			this.startWithDevTools = true;
 		}
 
 		/// <summary>

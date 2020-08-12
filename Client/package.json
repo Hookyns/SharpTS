@@ -13,17 +13,17 @@
   "author": "Roman Jámbor",
   "license": "MIT",
   "peerDependencies": {
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "globby": "^10.0.1"
+    "react": "16.x",
+    "react-dom": "16.x"
   },
   "devDependencies": {
-    "less": "^3.10.1",
-    "ttypescript": "^1.5.7",
-    "typescript": "^3.5.3",
     "@types/react": "^16.9.2",
     "@types/react-dom": "^16.9.0",
-    "tst-import-less": "^1.0.0"
+    "csstype": "^3.0.2",
+    "less": "^3.10.1",
+    "tst-import-less": "^1.0.0",
+    "ttypescript": "^1.5.7",
+    "typescript": "^3.5.3"
   },
   "files": [
     "**/*.js",
@@ -31,8 +31,6 @@
     "**/*.css"
   ],
   "dependencies": {
-    "globby": "^10.0.1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "clsx": "^1.1.1"
   }
 }

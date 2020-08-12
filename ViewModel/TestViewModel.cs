@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using SharpTS.Annotations;
 using SharpTS.ViewModel;
-using SharpTS.Page;
+using SharpTS.Component;
 
 namespace SharpTS.ViewModel
 {
@@ -17,7 +17,7 @@ namespace SharpTS.ViewModel
 		/// </summary>
 		public virtual string Name { get; set; }
 
-		public TestViewModel(PageFactory scope)
+		public TestViewModel(ComponentFactory scope)
 		{
 			this.PropertyChanged += (sender, args) =>
 			{

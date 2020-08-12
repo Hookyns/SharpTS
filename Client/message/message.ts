@@ -2,7 +2,7 @@
  * Internal message interface
  */
 import {MessageType} from "./MessageType";
-import Page from "../page/Page";
+import Component     from "../component/Component";
 
 interface IBaseMessage<TData = { [key: string]: any }>
 {
@@ -80,34 +80,34 @@ export function _fetch<TResult>(message: Message, timeout?: number): Promise<TRe
 }
 
 /**
- * Sync state with C# page ViewModel
+ * Sync state with C# component's ViewModel
  * @private
- * @param {Page} page
+ * @param {Component} component
  * @param {number} [timeout] Timeout in ms
  */
-export function syncState<TResult>(page: Page<any, any>): Promise<void>
+export function syncState<TResult>(component: Component<any, any>): Promise<void>
 {
 	return _fetch({
 		messageType: MessageType.SyncState,
 		data: { 
-			identifier: page.identifier,
-			viewModel: page.props.viewModel
+			identifier: component.identifier,
+			viewModel: component.props.viewModel
 		}
 	});
 }
 
 /**
- * Fetch data from C# codebase
+ * Request loading of another component
  * @private
- * @param {string} page
+ * @param {string} component
  * @param {{}} params
  * @param {number} [timeout] Timeout in ms
  */
-export function navigate<TResult>(page: string, params: { [key: string]: any }, timeout?: number): Promise<void>
+export function load<TResult>(component: string, params: { [key: string]: any }, timeout?: number): Promise<void>
 {
 	return _fetch({
-		messageType: MessageType.Navigate,
-		data: {page},
+		messageType: MessageType.Load,
+		data: {component: component},
 		userData: params
 	});
 }
@@ -122,7 +122,7 @@ export function navigate<TResult>(page: string, params: { [key: string]: any }, 
 // {
 // 	return _fetch({
 // 		messageType: MessageType.Navigate,
-// 		data: { page },
+// 		data: { component },
 // 		userData: data
 // 	});
 // }

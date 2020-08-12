@@ -8,7 +8,8 @@
     "jsx": "react",
     "plugins": [
       { "transform": "tst-import-less", "after": false }
-    ]
+    ],
+    "stripInternal": true
   },
   "include": [
     "**/*.ts",

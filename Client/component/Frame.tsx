@@ -1,14 +1,14 @@
-import * as React                  from "react";
-import {ReactNode}                 from "react";
-import Bootstrap                   from "../bootstrap";
-import {Message}                   from "../message/message";
-import {IFrameNavigateMessageData} from "../message/messages";
-import {MessageType}               from "../message/MessageType";
-import Page                        from "./Page";
+import * as React              from "react";
+import {ReactNode}             from "react";
+import Bootstrap               from "../bootstrap";
+import {Message}               from "../message/message";
+import {IFrameLoadMessageData} from "../message/messages/IFrameLoadMessageData";
+import {MessageType}           from "../message/MessageType";
+import Component               from "./Component";
 
 interface State
 {
-	page: typeof Page | undefined;
+	component: typeof Component | undefined;
 }
 
 interface Props
@@ -35,7 +35,7 @@ interface NewFrameMessage extends Message
 }
 
 /**
- * Frame component able to render pages
+ * Frame component able to render component
  */
 export default class Frame extends React.Component<Props, State>
 {
@@ -73,21 +73,21 @@ export default class Frame extends React.Component<Props, State>
 
 		// Listen to navigate event
 		// @ts-ignore
-		Bootstrap.instance.messageBroker.on(MessageType.Navigate, message => this.onNavigate(message));
+		Bootstrap.instance.messageBroker.on(MessageType.Load, message => this.onLoad(message));
 
 		// Send information about new frame instance
 		// @ts-ignore
-		Bootstrap.instance.messageBroker.send({messageType: MessageType.NewFrame, name: props.name })
+		Bootstrap.instance.messageBroker.send({messageType: MessageType.NewFrame, name: props.name})
 	}
 
 	/**
-	 * Navigate to another page
-	 * @param page
+	 * Load/render another component
+	 * @param component
 	 */
-	navigate(page: typeof Page)
+	load(component: typeof Component)
 	{
 		this.setState({
-			page
+			component: component
 		});
 	}
 
@@ -96,41 +96,44 @@ export default class Frame extends React.Component<Props, State>
 	 */
 	render(): ReactNode
 	{
-		if (this.state && Page.isPage(this.state.page)) {
-			const PageComponent = this.state.page;
-			return (<PageComponent/>);
+		if (this.state && Component.isComponent(this.state.component))
+		{
+			const Component = this.state.component;
+			return (<Component/>);
 		}
 
-		if (this.props.children) {
+		if (this.props.children)
+		{
 			return this.props.children;
 		}
 
 		return <div/>;
-		
+
 		// Looks better but not good as default value. Empty frame should be empty frame. Let user fill it.
 		// return <LoadingSpinner fullScreen={true} overlay={true}/>;
 	}
 
 	/**
-	 * On navigate request event
+	 * On load request event
 	 * @param message
 	 */
-	private onNavigate(message: Message<IFrameNavigateMessageData>): Promise<void>
+	private onLoad(message: Message<IFrameLoadMessageData>): Promise<void>
 	{
 		console.log(`Frame[name=${this.props.name}].onNavigate(): `, message);
-		
-		if (message.data.frameName == this.props.name) {
-			// @ts-ignore
-			let page = Bootstrap.instance.pageLoader.find(message.data.pageName);
-			
-			if (!page) {
-				console.error(`Frame[name=${this.props.name}]: navigation to page '${message.data.pageName}' failed, page not found!`);
+
+		if (message.data.frameName == this.props.name)
+		{
+			let component = Bootstrap.instance.componentLoader.find(message.data.componentName);
+
+			if (!component)
+			{
+				console.error(`Frame[name=${this.props.name}]: load of component '${message.data.componentName}' failed, component not found!`);
 				return Promise.resolve();
 			}
-			
-			this.navigate(page);
+
+			this.load(component);
 		}
-		
+
 		return Promise.resolve();
 	}
 }

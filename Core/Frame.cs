@@ -10,6 +10,8 @@ namespace SharpTS.Core
 	/// </summary>
 	public sealed class Frame
 	{
+		#region Fields
+
 		/// <summary>
 		/// Owning CefFrame
 		/// </summary>
@@ -19,11 +21,24 @@ namespace SharpTS.Core
 		/// Message broker
 		/// </summary>
 		private readonly MessageBroker messageBroker;
-		
+
+		#endregion
+
+		#region Properties
+
 		/// <summary>
 		/// Frame name
 		/// </summary>
 		public string Name { get; }
+
+		/// <summary>
+		/// Hold last component type
+		/// </summary>
+		public Type CurrentComponent { get; private set; }
+
+		#endregion
+
+		#region Ctors
 
 		/// <summary>
 		/// Ctor
@@ -38,20 +53,28 @@ namespace SharpTS.Core
 			this.messageBroker = messageBroker;
 		}
 
+		#endregion
+
+		#region Methods
+
 		/// <summary>
-		/// Navigate to given page
+		/// Load given component
 		/// </summary>
-		/// <param name="pageType"></param>
-		public void Navigate(Type pageType)
+		/// <param name="componentType"></param>
+		public void Load(Type componentType)
 		{
-			this.messageBroker.Send(this.cefFrame, new DataMessage<FrameNavigateMessageData>(MessageType.Navigate)
+			this.CurrentComponent = componentType;
+			
+			this.messageBroker.Send(this.cefFrame, new DataMessage<FrameLoadMessageData>(MessageType.Load)
 			{
-				Data = new FrameNavigateMessageData()
+				Data = new FrameLoadMessageData()
 				{
-					PageName = pageType.FullName,
+					ComponentName = componentType.FullName,
 					FrameName = this.Name
 				}
 			});
 		}
+
+		#endregion
 	}
 }

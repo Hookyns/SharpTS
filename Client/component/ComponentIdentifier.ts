@@ -1,4 +1,4 @@
-export default class PageIdentifier
+export default class ComponentIdentifier
 {
 	/**
 	 * Ctor
@@ -12,12 +12,12 @@ export default class PageIdentifier
 	}
 
 	/**
-	 * Assembly qualified type name of page
+	 * Full type name of the component
 	 */
 	private readonly _typeName: string;
 
 	/**
-	 * Assembly qualified type name of page
+	 * Full type name of the component
 	 */
 	get typeName(): string
 	{
