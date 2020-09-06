@@ -7,7 +7,7 @@ namespace SharpTS.Message
     /// <summary>
     /// Message argument object
     /// </summary>
-    public class MessageEventArgs
+    public class MessageEventArgs : IMessageEventArgs
     {
         #region Fields
 
@@ -38,21 +38,21 @@ namespace SharpTS.Message
         /// <summary>
         /// Base message
         /// </summary>
-        public BaseMessage BaseMessage
-        {
-            get => this.baseMessage ??= JsonConvert.DeserializeObject<MessageContainer<BaseMessage>>(this.RawJson)?.PostData;
-            protected set => this.baseMessage = value;
-        }
-
-        /// <summary>
-        /// Base message
-        /// </summary>
         internal CefFrame CefFrame { get; }
 
         /// <summary>
         /// Raw JSON message
         /// </summary>
         internal string RawJson { get; }
+
+        /// <summary>
+        /// Base message
+        /// </summary>
+        public BaseMessage BaseMessage
+        {
+            get => this.baseMessage ??= JsonConvert.DeserializeObject<MessageContainer<BaseMessage>>(this.RawJson)?.PostData;
+            protected set => this.baseMessage = value;
+        }
 
         /// <summary>
         /// True if served by some code/service/somebody
