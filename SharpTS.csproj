@@ -18,13 +18,10 @@
 
 	<ItemGroup>
 	  <TypeScriptCompile Include="Client\bootstrap.tsx" />
-	  <TypeScriptCompile Include="Client\components\LoadingSpinner\index.tsx" />
-	  <TypeScriptCompile Include="Client\components\TitleBar\index.tsx" />
-	  <TypeScriptCompile Include="Client\global-types.d.ts" />
+	  <TypeScriptCompile Include="Client\globals.d.ts" />
 	  <TypeScriptCompile Include="Client\infrastructure\IRootComponentProps.ts" />
 	  <TypeScriptCompile Include="Client\message\IMessageBroker.ts" />
 	  <TypeScriptCompile Include="Client\message\MessageBroker.ts" />
-	  <TypeScriptCompile Include="Client\message\messages.ts" />
 	  <TypeScriptCompile Include="Client\message\messages\IFrameLoadMessageData.ts" />
 	  <TypeScriptCompile Include="Client\message\MessageType.ts" />
 	  <TypeScriptCompile Include="Client\component\Frame.tsx" />
@@ -34,6 +31,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Client\@types" />
+	  <Folder Include="Client\components\Frame" />
+	  <Folder Include="Client\components\Navigator" />
 	  <Folder Include="contentFiles" />
 	  <Folder Include="Message\Operations" />
 	</ItemGroup>
@@ -44,10 +44,6 @@
 
 	<ItemGroup>
 	  <EmbeddedResource Remove="Client\node_modules\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="Client\node_modules\**" />
 	</ItemGroup>
 
 </Project>

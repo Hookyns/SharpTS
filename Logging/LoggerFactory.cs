@@ -9,23 +9,38 @@ namespace SharpTS.Logging
     internal static class LoggerFactory
     {
         /// <summary>
-        /// Factoy which should be used
+        /// Factory which should be used
         /// </summary>
         public static ILoggerFactory Factory;
         
         /// <summary>
         /// Create logger
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TCategory"></typeparam>
         /// <returns></returns>
-        public static ILogger<T> CreateLogger<T>()
+        public static ILogger<TCategory> CreateLogger<TCategory>()
         {
             if (Factory == null)
             {
-                return NullLogger<T>.Instance;
+                return NullLogger<TCategory>.Instance;
             }
             
-            return Factory.CreateLogger<T>();
+            return Factory.CreateLogger<TCategory>();
+        }
+        
+        /// <summary>
+        /// Create logger
+        /// </summary>
+        /// <param name="categoryName"></param>
+        /// <returns></returns>
+        public static ILogger CreateLogger(string categoryName)
+        {
+            if (Factory == null)
+            {
+                return NullLogger<NullLogger>.Instance;
+            }
+            
+            return Factory.CreateLogger(categoryName);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace SharpTS.Message
         /// <summary>
         /// Operation delegate
         /// </summary>
-        public delegate Task Operation(MessageEventArgs args);
+        public delegate Task Operation /*<in TArgs>*/(MessageEventArgs args);// where TArgs : MessageEventArgs;
 
         #endregion
 
@@ -25,7 +25,7 @@ namespace SharpTS.Message
         /// <summary>
         /// Name of JS function which will take messages
         /// </summary>
-        private const string ClientMeaaseBrokerTakeFunc = "SharpTS.messageBroker.take";
+        private const string ClientMessageBrokerTakeFunc = "SharpTS.messageBroker.take";
 
         /// <summary>
         /// Serialization settings
@@ -95,7 +95,7 @@ namespace SharpTS.Message
         /// </summary>
         /// <param name="messageType"></param>
         /// <param name="operation"></param>
-        internal void On(MessageType messageType, Operation operation)
+        internal void On<TMessage>(MessageType messageType, Operation operation)
         {
             if (this.messageListeners.TryGetValue(messageType, out var listeners))
             {
@@ -121,7 +121,7 @@ namespace SharpTS.Message
         private string SendMessageScript(object message)
         {
             string messageData = JsonConvert.SerializeObject(message, SerializeSettings);
-            return $"{ClientMeaaseBrokerTakeFunc}({messageData})";
+            return $"{ClientMessageBrokerTakeFunc}({messageData})";
         }
 
         /// <summary>

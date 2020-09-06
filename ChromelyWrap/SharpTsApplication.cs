@@ -73,7 +73,7 @@ namespace SharpTS.ChromelyWrap
         internal void PrepareMessageBroker(ServiceProvider serviceProvider)
         {
             this.messageBroker = serviceProvider.GetRequiredService<MessageBroker>();
-            this.messageBroker.On(MessageType.DOMContentLoaded, async (arg) =>
+            this.messageBroker.On<MessageEventArgs>(MessageType.DOMContentLoaded, async (arg) =>
             {
                 await this.applicationBuilder.Application.Loaded();
                 arg.Success(null);

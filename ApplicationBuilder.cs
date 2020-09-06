@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using Chromely;
 using Chromely.Core;
 using Chromely.Core.Configuration;
@@ -8,6 +10,7 @@ using Chromely.Core.Infrastructure;
 using Microsoft.Extensions.Logging;
 using SharpTS.ChromelyWrap;
 using SharpTS.Core;
+using LoggerFactory = SharpTS.Logging.LoggerFactory;
 
 namespace SharpTS
 {
@@ -73,7 +76,7 @@ namespace SharpTS
         private ApplicationBuilder(Application application)
         {
             this.Application = application;
-            
+
             this.Initialize();
         }
 
@@ -114,8 +117,8 @@ namespace SharpTS
         /// </summary>
         /// <param name="loggerFactory"></param>
         /// <returns></returns>
-        public ApplicationBuilder UseLogger<TLoggerFactory>(TLoggerFactory loggerFactory)
-            where TLoggerFactory : ILoggerFactory
+        public ApplicationBuilder UseLogger<TLoggerFactory>(TLoggerFactory loggerFactory = null)
+            where TLoggerFactory : class, ILoggerFactory
         {
             if (loggerFactory == null)
             {
@@ -157,38 +160,74 @@ namespace SharpTS
         public ApplicationBuilder Frameless()
         {
             this.StartFrameless = true;
-            
+
             this.config.WindowOptions.FramelessOption.DragZones.Add(new DragZoneConfiguration(30, 0, 0, 0));
-            
+
             return this;
         }
 
         /// <summary>
         /// Start application
         /// </summary>
-        public void Start(string startUrl = null)
+        public int Start(string startUrl = null)
         {
-            string[] args = Environment.GetCommandLineArgs()
-                // Skip first, it's program path 
-                .Skip(1)
-                .ToArray();
+            try
+            {
+                this.config.StartUrl = string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl;
+                this.sharpTsApp = this.StartFrameless ? (ChromelyAppBase) new SharpTsFramelessApplication(this) : new SharpTsBasicApplication(this);
+                AppBuilder builder;
 
-            this.config.StartUrl = string.IsNullOrWhiteSpace(startUrl) ? StartUrl : startUrl;
-            
-            this.sharpTsApp = this.StartFrameless ? (ChromelyAppBase)new SharpTsFramelessApplication(this) : new SharpTsBasicApplication(this);
+                try
+                {
+                    builder = AppBuilder.Create()
+                        .UseConfig<DefaultConfiguration>(this.config)
+                        .UseWindow<AppWindow>()
+                        .UseApp<ChromelyBasicApp>(this.sharpTsApp)
+                        .Build();
+                }
+                catch (Exception ex)
+                {
+                    this.GetLogger().Log(LogLevel.Critical, ex, "Critical exception thrown when building the application.");
+                    return -2;
+                }
 
-            AppBuilder.Create()
-                .UseConfig<DefaultConfiguration>(this.config)
-                .UseWindow<AppWindow>()
-                .UseApp<ChromelyBasicApp>(this.sharpTsApp)
-                .Build()
-                // Blocking call
-                .Run(args);
+                try
+                {
+                    string[] args = Environment.GetCommandLineArgs()
+                        // Skip first, it's program path
+                        .Skip(1)
+                        .ToArray();
+
+                    // Blocking call
+                    builder.Run(args);
+
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    this.GetLogger().Log(LogLevel.Critical, ex, "Critical exception thrown by running application.");
+                }
+            }
+            finally
+            {
+                LoggerFactory.Factory?.Dispose();
+            }
+
+            return -1;
         }
 
         #endregion
 
         #region Private methods
+
+        /// <summary>
+        /// Returns instance of logger for application builder
+        /// </summary>
+        /// <returns></returns>
+        private ILogger GetLogger()
+        {
+            return Logging.LoggerFactory.CreateLogger($"{nameof(ApplicationBuilder)}<{this.Application.GetType().Name}>");
+        }
 
         /// <summary>
         /// Initialize application
@@ -221,7 +260,7 @@ namespace SharpTS
             // config.WindowOptions.Position = new WindowPosition(1, 2);
             this.config.WindowOptions.Size = new WindowSize(1000, 600);
             this.config.WindowOptions.RelativePathToIconFile = this.Application.Icon;
-            
+
             this.config.DebuggingMode = false;
         }
 

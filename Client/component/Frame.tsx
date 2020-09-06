@@ -34,31 +34,17 @@ interface NewFrameMessage extends Message
 	frameName: string;
 }
 
+
 /**
- * Frame component able to render component
+ * Collection with frames
  */
-export default class Frame extends React.Component<Props, State>
+const _frames: { [frameName: string]: Renderer } = {};
+
+/**
+ * Frame component able to render C# component
+ */
+class Renderer extends React.Component<Props, State>
 {
-	/**
-	 * Collection with frames
-	 */
-	private static _frames: { [frameName: string]: Frame } = {};
-
-	/**
-	 * Get existing frames
-	 */
-	public static get frames(): { [frameName: string]: Frame }
-	{
-		return Object.assign({}, this._frames);
-	}
-
-	/**
-	 * Frame name
-	 */
-	public get name()
-	{
-		return this.props.name;
-	}
 
 	/**
 	 * Ctor
@@ -69,15 +55,29 @@ export default class Frame extends React.Component<Props, State>
 		super(props);
 
 		// Store new frame
-		Frame.frames[this.props.name] = this;
+		_frames[this.props.name] = this;
 
 		// Listen to navigate event
-		// @ts-ignore
-		Bootstrap.instance.messageBroker.on(MessageType.Load, message => this.onLoad(message));
+		Bootstrap.instance.messageBroker.on(MessageType.Load, message => this.onLoad(message as Message<any>));
 
 		// Send information about new frame instance
-		// @ts-ignore
-		Bootstrap.instance.messageBroker.send({messageType: MessageType.NewFrame, name: props.name})
+		Bootstrap.instance.messageBroker.send({messageType: MessageType.NewFrame, data: { frameName: props.name } as IFrameLoadMessageData})
+	}
+
+	/**
+	 * Get existing frames
+	 */
+	public static get frames(): { [frameName: string]: Renderer }
+	{
+		return Object.assign({}, _frames);
+	}
+
+	/**
+	 * Frame name
+	 */
+	public get name()
+	{
+		return this.props.name;
 	}
 
 	/**
@@ -93,6 +93,7 @@ export default class Frame extends React.Component<Props, State>
 
 	/**
 	 * Render frame
+	 * @nternal
 	 */
 	render(): ReactNode
 	{
@@ -136,4 +137,29 @@ export default class Frame extends React.Component<Props, State>
 
 		return Promise.resolve();
 	}
+}
+
+class FrameContext {
+	/**
+	 * Ctor
+	 * @param frameName
+	 */
+	constructor(frameName: string)
+	{
+		this._frameName = frameName;
+	}
+	
+	private _frameName: string;
+
+	get frameName(): string
+	{
+		return this._frameName;
+	}
+}
+
+const Context = React.createContext(null);
+
+export default {
+	Renderer,
+	Context
 }

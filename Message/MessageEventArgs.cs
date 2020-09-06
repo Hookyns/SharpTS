@@ -1,127 +1,128 @@
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using Xilium.CefGlue;
 using Xilium.CefGlue.Wrapper;
 
 namespace SharpTS.Message
 {
-	/// <summary>
-	/// Message argument object
-	/// </summary>
-	public class MessageEventArgs
-	{
-		#region Fields
+    /// <summary>
+    /// Message argument object
+    /// </summary>
+    public class MessageEventArgs
+    {
+        #region Fields
 
-		/// <summary>
-		/// Callback
-		/// </summary>
-		private CefMessageRouterBrowserSide.Callback callback;
+        /// <summary>
+        /// Callback
+        /// </summary>
+        protected CefMessageRouterBrowserSide.Callback callback;
 
-		/// <summary>
-		/// Marked true when served by somebody.
-		/// </summary>
-		private bool served;
+        /// <summary>
+        /// Marked true when served by somebody.
+        /// </summary>
+        private bool served;
 
-		#endregion
-		
-		#region Properties
+        /// <summary>
+        /// Base message
+        /// </summary>
+        private BaseMessage baseMessage;
 
-		/// <summary>
-		/// Base message
-		/// </summary>
-		internal CefFrame CefFrame { get; }
+        #endregion
 
-		/// <summary>
-		/// Base message
-		/// </summary>
-		public BaseMessage BaseMessage { get; }
+        #region Properties
 
-		/// <summary>
-		/// Raw JSON message
-		/// </summary>
-		public string RawJson { get; }
+        /// <summary>
+        /// Callback
+        /// </summary>
+        internal CefMessageRouterBrowserSide.Callback Callback => this.callback;
 
-		/// <summary>
-		/// Parsed JSON
-		/// </summary>
-		public JObject ParsedJson { get; }
+        /// <summary>
+        /// Base message
+        /// </summary>
+        public BaseMessage BaseMessage
+        {
+            get => this.baseMessage ??= JsonConvert.DeserializeObject<MessageContainer<BaseMessage>>(this.RawJson)?.PostData;
+            protected set => this.baseMessage = value;
+        }
 
-		/// <summary>
-		/// PostData of parsed JSON
-		/// </summary>
-		public JToken PostData { get; }
+        /// <summary>
+        /// Base message
+        /// </summary>
+        internal CefFrame CefFrame { get; }
 
-		/// <summary>
-		/// True if served by some code/service/somebodyw
-		/// </summary>
-		public bool Served => this.served;
+        /// <summary>
+        /// Raw JSON message
+        /// </summary>
+        internal string RawJson { get; }
 
-		#endregion
+        /// <summary>
+        /// True if served by some code/service/somebody
+        /// </summary>
+        public bool Served => this.served;
 
-		#region Ctors
+        #endregion
 
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="cefFrame"></param>
-		/// <param name="rawJson"></param>
-		/// <param name="callback"></param>
-		public MessageEventArgs(CefFrame cefFrame, string rawJson, CefMessageRouterBrowserSide.Callback callback)
-		{
-			this.CefFrame = cefFrame;
-			this.callback = callback;
-			
-			this.RawJson = rawJson;
-			this.ParsedJson = JObject.Parse(rawJson);
-			this.PostData = this.ParsedJson.GetValue("postData");
+        #region Ctors
 
-			this.BaseMessage = this.PostData.ToObject<BaseMessage>();
-		}
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="cefFrame"></param>
+        /// <param name="rawJson"></param>
+        /// <param name="callback"></param>
+        public MessageEventArgs(CefFrame cefFrame, string rawJson, CefMessageRouterBrowserSide.Callback callback)
+        {
+            this.CefFrame = cefFrame;
+            this.callback = callback;
+            this.RawJson = rawJson;
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// Return required data from message
-		/// </summary>
-		/// <typeparam name="TData"></typeparam>
-		/// <returns></returns>
-		public TData GetData<TData>()
-		{
-			return this.PostData.ToObject<TData>();
-		}
+        /// <summary>
+        /// Send success response
+        /// </summary>
+        /// <param name="response"></param>
+        public void Success(string response = null)
+        {
+            if (this.served)
+            {
+                return;
+            }
 
-		/// <summary>
-		/// Send success response
-		/// </summary>
-		/// <param name="response"></param>
-		public void Success(string response = null)
-		{
-			if (this.served)
-			{
-				return;
-			}
-			this.served = true;
-			
-			this.callback.Success(response);
-		}
+            this.served = true;
 
-		/// <summary>
-		/// Send failure response
-		/// </summary>
-		/// <param name="errorCode"></param>
-		/// <param name="errorMessage"></param>
-		public void Failure(int errorCode, string errorMessage)
-		{
-			if (this.served)
-			{
-				return;
-			}
-			this.served = true;
-			
-			this.callback.Failure(errorCode, errorMessage);
-		}
+            this.callback.Success(response);
+        }
 
-		#endregion
-	}
+        /// <summary>
+        /// Send failure response
+        /// </summary>
+        /// <param name="errorCode"></param>
+        /// <param name="errorMessage"></param>
+        public void Failure(int errorCode, string errorMessage)
+        {
+            if (this.served)
+            {
+                return;
+            }
+
+            this.served = true;
+
+            this.callback.Failure(errorCode, errorMessage);
+        }
+
+        /// <summary>
+        /// Cast general message arg to arg with specific message
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <returns></returns>
+        public MessageEventArgs<TMessage> Cast<TMessage>() where TMessage : BaseMessage
+        {
+            return new MessageEventArgs<TMessage>(this);
+        }
+
+        #endregion
+    }
 }

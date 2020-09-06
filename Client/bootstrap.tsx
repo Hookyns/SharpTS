@@ -36,8 +36,9 @@ export default class Bootstrap
 
 	/**
 	 * Message broker
+	 * @internal
 	 */
-	private messageBroker = new MessageBroker();
+	public messageBroker = new MessageBroker();
 
 	/**
 	 * Returns singleton instance of Bootstrap
@@ -55,11 +56,9 @@ export default class Bootstrap
 	 */
 	constructor()
 	{
-		// BUG: WebPack remove ew.target and replace it by "Object()" which leads to throw
-		// if (new.target != BootstrapActivator) {
-		// 	console.log(new.target)
-		// 	throw new Error("Bootstrap.constructor() is private!");
-		// }
+		if (new.target != BootstrapActivator) {
+			throw new Error("Bootstrap.constructor() is private!");
+		}
 		
 		this.registerGlobals();
 		this.initDomLoaded();

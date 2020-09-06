@@ -2,7 +2,6 @@
   "name": "sharpts",
   "version": "1.0.0",
   "description": "Package for view part of SharpTS",
-  "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -17,8 +16,6 @@
     "react-dom": "16.x"
   },
   "devDependencies": {
-    "@types/react": "^16.9.2",
-    "@types/react-dom": "^16.9.0",
     "csstype": "^3.0.2",
     "less": "^3.10.1",
     "tst-import-less": "^1.0.0",
@@ -28,7 +25,8 @@
   "files": [
     "**/*.js",
     "**/*.d.ts",
-    "**/*.css"
+    "**/*.css",
+    "index.d.ts"
   ],
   "dependencies": {
     "clsx": "^1.1.1"
